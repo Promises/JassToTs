@@ -64,3 +64,5 @@ typings/
 *.j
 
 package-lock.json
+
+.idea

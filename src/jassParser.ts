@@ -1,3 +1,8 @@
+/**
+ * Original C# Author: William (TinkerWorX)
+ * Converting to Typescript: Henning Berge (Promises)
+ */
+
 import fs, {WriteStream} from 'fs';
 
 export class TypeDefinition {

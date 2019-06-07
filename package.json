@@ -1,6 +1,6 @@
 {
   "name": "convertjasstots",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts Jass definitions to Typescript Declarations",
   "main": "index.js",
   "types": "dist/index.d.ts",
@@ -11,6 +11,7 @@
     "typescript",
     "jass"
   ],
+  "repository": "github:Promises/JassToTs",
   "author": "Henning Berge <henning@henning.tech> (https://maulbot.com/)",
   "license": "MIT",
   "dependencies": {
