@@ -1,0 +1,20 @@
+{
+  "name": "convertjasstots",
+  "version": "1.0.0",
+  "description": "Converts Jass definitions to Typescript Declarations",
+  "main": "index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "typescript",
+    "jass"
+  ],
+  "author": "Henning Berge <henning@henning.tech> (https://maulbot.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^12.0.7",
+    "typescript": "^3.5.1"
+  }
+}
