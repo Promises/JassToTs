@@ -238,7 +238,7 @@ export class JassParser {
 
     public main(args: string[]) {
         if (args.length < 4) {
-            console.log("Usage: TinkerWorX.JassToTypeScript.exe input1.j [input2.j...] output.d.ts");
+            console.log("Usage: node index.js input1.j [input2.j...] output.d.ts");
             return 1;
         }
         args = args.slice(2, args.length);
