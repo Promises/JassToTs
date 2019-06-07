@@ -5,20 +5,17 @@
 
 import fs, {WriteStream} from 'fs';
 
-export class TypeDefinition {
-    public Name: string;
-    public Parent: string;
+export interface TypeDefinition {
+    Name: string;
+    Parent: string;
 
-    constructor(Name: string, Parent: string) {
-        this.Name = Name;
-        this.Parent = Parent;
-    }
 
 }
 
 export class ArgumentDefinition {
-    public Type: string;
-    public Name: string;
+    Type: string;
+    Name: string;
+
 
     constructor(Type: string, Name: string) {
         this.Type = Type;
@@ -26,51 +23,37 @@ export class ArgumentDefinition {
     }
 }
 
-export class NativeDefinition {
-    public Name: string;
-    public Arguments: ArgumentDefinition[];
-    public ReturnType: string;
+export interface NativeDefinition {
+    Name: string;
+    Arguments: ArgumentDefinition[];
+    ReturnType: string;
 
-    constructor(Name: string, Arguments: ArgumentDefinition[], ReturnType: string) {
-        this.Name = Name;
-        this.Arguments = Arguments;
-        this.ReturnType = ReturnType;
-    }
+
 }
 
-export class GlobalDefinition {
-    public IsConstant: boolean;
-    public Type: string;
-    public IsArray: boolean;
-    public Name: string;
-    public Value: string;
+export interface GlobalDefinition {
+    IsConstant: boolean;
+    Type: string;
+    IsArray: boolean;
+    Name: string;
+    Value: string;
 
-    constructor(IsConstant: boolean, Type: string, IsArray: boolean, Name: string, Value: string) {
-        this.IsConstant = IsConstant;
-        this.Type = Type;
-        this.IsArray = IsArray;
-        this.Name = Name;
-        this.Value = Value;
-    }
+
 }
 
-export class FunctionDefinition {
-    public Name: string;
-    public Arguments: ArgumentDefinition[];
-    public ReturnType: string;
+export interface FunctionDefinition {
+    Name: string;
+    Arguments: ArgumentDefinition[];
+    ReturnType: string;
 
-    constructor(Name: string, Arguments: ArgumentDefinition[], ReturnType: string) {
-        this.Name = Name;
-        this.Arguments = Arguments;
-        this.ReturnType = ReturnType;
-    }
+
 }
 
-export class LibraryDefinition {
-    public Types: TypeDefinition[] = [];
-    public Natives: NativeDefinition[] = [];
-    public Globals: GlobalDefinition[] = [];
-    public Functions: FunctionDefinition[] = [];
+export interface LibraryDefinition {
+    Types: TypeDefinition[];
+    Natives: NativeDefinition[];
+    Globals: GlobalDefinition[];
+    Functions: FunctionDefinition[];
 
 }
 
@@ -125,13 +108,14 @@ export class JassParser {
                     if (globalDefinition.groups) {
                         let type = globalDefinition.groups['type'];
                         let value = globalDefinition.groups["value"];
-                        library.Globals.push(new GlobalDefinition(
-                            !this.isNullOrWhitespace(globalDefinition.groups["constant"]),
-                            type,
-                            !this.isNullOrWhitespace(globalDefinition.groups["array"]),
-                            globalDefinition.groups["name"],
-                            value
-                        ))
+
+                        library.Globals.push({
+                            IsConstant: !this.isNullOrWhitespace(globalDefinition.groups["constant"]),
+                            Type: type,
+                            IsArray: !this.isNullOrWhitespace(globalDefinition.groups["array"]),
+                            Name: globalDefinition.groups["name"],
+                            Value: value
+                        })
                     }
                 }
             } else {
@@ -143,10 +127,10 @@ export class JassParser {
                 let typeDefinition = line.match(this.TYPE_DEFINITION);
                 if (typeDefinition != null) {
                     if (typeDefinition.groups) {
-                        library.Types.push(new TypeDefinition(
-                            typeDefinition.groups["name"],
-                            typeDefinition.groups["parent"]
-                        ))
+                        library.Types.push({
+                            Name: typeDefinition.groups["name"],
+                            Parent: typeDefinition.groups["parent"]
+                        })
                     }
                     continue;
                 }
@@ -160,14 +144,14 @@ export class JassParser {
                         let prototype = nativeDefinition.groups["prototype"];
                         let takes = this.clean(prototype.split("returns")[0]);
                         let returns = this.clean(prototype.split("returns")[1]);
-                        library.Natives.push(new NativeDefinition(
-                            name,
-                            takes == "nothing" ? [] : takes.split(',').map(s => s.trim()).map(s => new ArgumentDefinition(
+                        library.Natives.push({
+                            Name: name,
+                            Arguments: takes == "nothing" ? [] : takes.split(',').map(s => s.trim()).map(s => new ArgumentDefinition(
                                 s.split(' ')[0],
                                 s.split(' ')[1],
                             )),
-                            returns
-                        ));
+                            ReturnType: returns
+                        });
                         continue;
                     }
                 }
@@ -179,14 +163,14 @@ export class JassParser {
                         let prototype = functionDefinition.groups["prototype"];
                         let takes = this.clean(prototype.split("returns")[0]);
                         let returns = this.clean(prototype.split("returns")[1]);
-                        library.Functions.push(new FunctionDefinition(
-                            name,
-                            takes == "nothing" ? [] : takes.split(',').map(s => s.trim()).map(s => new ArgumentDefinition(
+                        library.Functions.push({
+                            Name: name,
+                            Arguments: takes == "nothing" ? [] : takes.split(',').map(s => s.trim()).map(s => new ArgumentDefinition(
                                 s.split(' ')[0],
                                 s.split(' ')[1],
                             )),
-                            returns
-                        ));
+                            ReturnType: returns
+                        });
                         continue;
                     }
                 }
@@ -245,15 +229,19 @@ export class JassParser {
         var inputFiles = args.slice(0, args.length - 1);
         var outputFile = args[args.length - 1];
 
-        var library = new LibraryDefinition();
+        var library: LibraryDefinition = {
+            Types: [],
+            Natives: [],
+            Globals: [],
+            Functions: [],
+        };
 
         for (let inputFile of inputFiles) {
             console.log(`Parsing: ${inputFile}`);
             this.parseFile(inputFile, library);
         }
-
         console.log((`Writing: ${outputFile}`));
-        var writer = fs.createWriteStream(outputFile, {
+        let writer = fs.createWriteStream(outputFile, {
             flags: 'w'
         });
         this.writeLine(writer, "/** @noSelfInFile **/");
@@ -282,7 +270,7 @@ export class JassParser {
             else
                 writer.write(" var");
             writer.write(` ${global.Name}`);
-            this.writeLine(writer,`: ${this.FixType(global.Type)}`);
+            this.writeLine(writer, `: ${this.FixType(global.Type)}`);
         }
         this.blankLine(writer);
 
@@ -294,7 +282,7 @@ export class JassParser {
             }
             this.writeLine(writer, `): ${this.FixType(funct.ReturnType)}`);
         }
-
+        writer.end();
         return 0;
     }
 }
