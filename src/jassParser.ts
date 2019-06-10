@@ -245,7 +245,7 @@ export class JassParser {
         JassParser.blankLine(writer);
 
         for (const type of library.Types) {
-            JassParser.writeLine(writer, `declare abstract class ${type.Name} extends ${type.Parent} { __${type.Name}: never; }`);
+            JassParser.writeLine(writer, `declare interface ${type.Name} extends ${type.Parent} { __${type.Name}: never; }`);
         }
         JassParser.blankLine(writer);
         for (const native of library.Natives) {
