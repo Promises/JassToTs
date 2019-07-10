@@ -1,6 +1,6 @@
 {
   "name": "convertjasstots",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Converts Jass definitions to Typescript Declarations",
   "main": "index.js",
   "types": "dist/index.d.ts",

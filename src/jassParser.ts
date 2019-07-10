@@ -217,7 +217,7 @@ export class JassParser {
         this.parseLines(fs.readFileSync(path, 'utf8').split('\n'), library);
     }
 
-    public main(args: string[]) {
+    public async main(args: string[]) {
         if (args.length < 4) {
             console.log('Usage: node index.js input1.j [input2.j...] output.d.ts');
             return 1;
@@ -290,6 +290,9 @@ export class JassParser {
             JassParser.writeLine(writer, `): ${JassParser.FixType(funct.ReturnType)}`);
         }
         writer.end();
+        await writer.addListener('close', () => {
+        });
         return 0;
+
     }
 }
