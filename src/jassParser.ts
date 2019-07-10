@@ -86,11 +86,11 @@ export class JassParser {
         return input;
     }
 
-    private static writeLine(writer: WriteStream, line: string) {
-        writer.write(line + '\n');
+    private static writeLine(writer: string[], line: string) {
+        writer.push(line);
     }
 
-    private static blankLine(writer: WriteStream) {
+    private static blankLine(writer: string[]) {
         JassParser.writeLine(writer, '');
     }
 
@@ -217,7 +217,7 @@ export class JassParser {
         this.parseLines(fs.readFileSync(path, 'utf8').split('\n'), library);
     }
 
-    public async main(args: string[]) {
+    public main(args: string[]) {
         if (args.length < 4) {
             console.log('Usage: node index.js input1.j [input2.j...] output.d.ts');
             return 1;
@@ -238,60 +238,63 @@ export class JassParser {
             this.parseFile(inputFile, library);
         }
         console.log((`Writing: ${outputFile}`));
-        const writer = fs.createWriteStream(outputFile, {
-            flags: 'w',
-        });
+        // const writer = fs.createWriteStream(outputFile, {
+        //     flags: 'w',
+        // });
+        const writer: string[] = [];
         JassParser.writeLine(writer, '/** @noSelfInFile **/');
         JassParser.blankLine(writer);
 
         for (const type of library.Types) {
-            JassParser.writeLine(writer, `declare interface ${type.Name} extends ${type.Parent} { __${type.Name}: never; }`);
+            JassParser.writeLine(writer, `declare interface ${type.Name} extends ${type.Parent} { __${type.Name}: never; };`);
         }
         JassParser.blankLine(writer);
         for (const native of library.Natives) {
             JassParser.Magic(native);
-            writer.write(`declare function ${native.Name}(`);
+            let line = '';
+            line += `declare function ${native.Name}(`;
             if (native.Arguments.length !== 0) {
-                writer.write(
-                    `${native.Arguments.map(
+                line += `${native.Arguments.map(
                         arg => `${arg.Name}: ${JassParser.FixType(arg.Type)}`,
                     ).reduce(
                         (a, b) => a + ', ' + b
-                    )}`,
-                );
+                    )}`;
 
             }
-            JassParser.writeLine(writer, `): ${JassParser.FixType(native.ReturnType)}`);
+            JassParser.writeLine(writer, line + `): ${JassParser.FixType(native.ReturnType)};`);
         }
 
         JassParser.blankLine(writer);
 
         for (const global of library.Globals) {
-            writer.write('declare');
+            let line = '';
+
+            line += 'declare';
             if (global.IsConstant) {
-                writer.write(' const');
+                line += ' const';
             } else {
-                writer.write(' var');
+                line += ' var';
             }
-            writer.write(` ${global.Name}`);
-            JassParser.writeLine(writer, `: ${JassParser.FixType(global.Type)}`);
+            line += ` ${global.Name}`;
+            JassParser.writeLine(writer, line + `: ${JassParser.FixType(global.Type)};`);
         }
         JassParser.blankLine(writer);
 
         for (const funct of library.Functions) {
-            writer.write(`declare function ${funct.Name}(`);
+            let line = '';
+
+            line += `declare function ${funct.Name}(`;
             if (funct.Arguments.length !== 0) {
-                writer.write(
-                    `${funct.Arguments.map(
+                line += `${funct.Arguments.map(
                         arg => `${arg.Name}: ${JassParser.FixType(arg.Type)}`
-                    ).reduce((a, b) => a + ', ' + b)}`);
+                    ).reduce((a, b) => a + ', ' + b)}`;
 
             }
-            JassParser.writeLine(writer, `): ${JassParser.FixType(funct.ReturnType)}`);
+            JassParser.writeLine(writer, line + `): ${JassParser.FixType(funct.ReturnType)};`);
         }
-        writer.end();
-        await writer.addListener('close', () => {
-        });
+
+        fs.writeFileSync(outputFile, writer.join('\n'));
+
         return 0;
 
     }

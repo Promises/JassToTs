@@ -1,8 +1,6 @@
 import {JassParser} from "./jassParser";
 
-let parser = new JassParser();
+const parser = new JassParser();
 // process.exit(
-parser.main(process.argv).then((code) => {
-    console.log(code);
-});
+parser.main(process.argv);
 // );
