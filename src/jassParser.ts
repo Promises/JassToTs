@@ -3,7 +3,7 @@
  * Converting to Typescript: Henning Berge (Promises)
  */
 
-import fs, { WriteStream } from 'fs';
+import * as fs from 'fs';
 
 export interface TypeDefinition {
     Name: string;
@@ -246,7 +246,7 @@ export class JassParser {
         JassParser.blankLine(writer);
 
         for (const type of library.Types) {
-            JassParser.writeLine(writer, `declare interface ${type.Name} extends ${type.Parent} { __${type.Name}: never; };`);
+            JassParser.writeLine(writer, `declare interface ${type.Name} extends ${type.Parent} { __${type.Name}: never; }`);
         }
         JassParser.blankLine(writer);
         for (const native of library.Natives) {
@@ -276,7 +276,8 @@ export class JassParser {
                 line += ' var';
             }
             line += ` ${global.Name}`;
-            JassParser.writeLine(writer, line + `: ${JassParser.FixType(global.Type)};`);
+            const arrayText = (global.IsArray ? "[]" : "");
+            JassParser.writeLine(writer, line + `: ${JassParser.FixType(global.Type)}${arrayText};`);
         }
         JassParser.blankLine(writer);
 
