@@ -15,7 +15,7 @@
   "author": "Henning Berge <henning@henning.tech> (https://maulbot.com/)",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^12.0.7",
+    "@types/node": "^12.0.7"
   },
   "devDependencies": {
     "tslint": "^5.17.0",

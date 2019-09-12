@@ -103,7 +103,7 @@ export class JassParser {
         }
     }
 
-    private static FixType(type: string): string {
+    private static FixType(type: string, isReturn = false): string {
         switch (type) {
             case 'real':
             case 'integer':
@@ -115,7 +115,11 @@ export class JassParser {
             case 'code':
                 type = '() => void';
                 break;
-            // case "boolexpr":
+            case "boolexpr":
+                if (!isReturn){
+                    type = 'boolexpr | null';
+                }
+                break;
             // case "conditionfunc":
             // case "filterfunc":
             // type = "() => boolean";
@@ -261,7 +265,7 @@ export class JassParser {
                     )}`;
 
             }
-            JassParser.writeLine(writer, line + `): ${JassParser.FixType(native.ReturnType)};`);
+            JassParser.writeLine(writer, line + `): ${JassParser.FixType(native.ReturnType, true)};`);
         }
 
         JassParser.blankLine(writer);
@@ -291,7 +295,7 @@ export class JassParser {
                     ).reduce((a, b) => a + ', ' + b)}`;
 
             }
-            JassParser.writeLine(writer, line + `): ${JassParser.FixType(funct.ReturnType)};`);
+            JassParser.writeLine(writer, line + `): ${JassParser.FixType(funct.ReturnType, true)};`);
         }
 
         fs.writeFileSync(outputFile, writer.join('\n'));
