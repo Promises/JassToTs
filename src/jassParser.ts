@@ -117,7 +117,7 @@ export class JassParser {
                 break;
             case "boolexpr":
                 if (!isReturn){
-                    type = 'boolexpr | null';
+                    type = 'boolexpr | () => boolean | null';
                 }
                 break;
             // case "conditionfunc":
